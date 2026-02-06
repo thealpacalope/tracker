@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meal Tracker</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', Arial, sans-serif;
+            background: #0a0a0a;
+            min-height: 100vh;
+            padding: 0;
+            color: #e0e0e0;
+        }
+        .header {
+            background: #151515;
+            border-bottom: 1px solid #2a2a2a;
+            padding: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+        }
+        .header-content {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .date-nav {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .nav-btn {
+            background: #2a2a2a;
+            border: 1px solid #3a3a3a;
+            color: #e0e0e0;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .nav-btn:hover {
+            background: #3a3a3a;
+            border-color: #4a4a4a;
+        }
+        .date-display {
+            font-size: 18px;
+            font-weight: 600;
+            color: #ffffff;
+            min-width: 200px;
+            text-align: center;
+        }
+        .stats {
+            display: flex;
+            gap: 24px;
+            font-size: 14px;
+            color: #888;
+        }
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #4caf50;
+        }
+        .stat-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 2px;
+            color: #666;
+        }
+        .shopping-toggle {
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.15s;
+            border: 1px solid #2a2a2a;
+        }
+        .shopping-toggle:hover {
+            background: #202020;
+        }
+        .shopping-toggle-text {
+            font-size: 15px;
+            font-weight: 500;
+            color: #e0e0e0;
+        }
+        .shopping-arrow {
+            font-size: 12px;
+            color: #666;
+            transition: transform 0.2s;
+        }
+        .shopping-arrow.open {
+            transform: rotate(180deg);
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 24px 20px;
+        }
+        .shopping-content {
+            display: none;
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+            border: 1px solid #2a2a2a;
+        }
+        .shopping-content.show {
+            display: block;
+        }
+        .shopping-section {
+            margin-bottom: 20px;
+        }
+        .shopping-section:last-child {
+            margin-bottom: 0;
+        }
+        .shopping-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #4caf50;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+        .shopping-item {
+            padding: 8px 0;
+            color: #e0e0e0;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .shopping-item::before {
+            content: '•';
+            color: #4caf50;
+            font-size: 20px;
+        }
+        .meal-section {
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 0;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+            overflow: hidden;
+            border: 1px solid #2a2a2a;
+        }
+        .meal-header {
+            padding: 16px 20px;
+            background: #202020;
+            border-bottom: 1px solid #2a2a2a;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .meal-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .meal-items {
+            padding: 0;
+        }
+        .meal-item {
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            border-bottom: 1px solid #252525;
+            transition: background 0.15s;
+        }
+        .meal-item:last-child {
+            border-bottom: none;
+        }
+        .meal-item:hover {
+            background: #202020;
+        }
+        .checkbox-wrapper {
+            position: relative;
+            width: 24px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+        .checkbox {
+            position: absolute;
+            opacity: 0;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            margin: 0;
+        }
+        .checkbox-custom {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            border: 2px solid #444;
+            border-radius: 50%;
+            pointer-events: none;
+            transition: all 0.2s;
+        }
+        .checkbox:checked + .checkbox-custom {
+            border-color: #4caf50;
+            background: #4caf50;
+            box-shadow: 0 0 8px rgba(76, 175, 80, 0.4);
+        }
+        .checkbox:checked + .checkbox-custom::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #0a0a0a;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .meal-text {
+            flex: 1;
+            font-size: 15px;
+            color: #e0e0e0;
+            line-height: 1.5;
+        }
+        .meal-text.completed {
+            color: #666;
+            text-decoration: line-through;
+        }
+        .btn-save {
+            width: 100%;
+            padding: 16px;
+            background: #4caf50;
+            color: #0a0a0a;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 2px 12px rgba(76, 175, 80, 0.3);
+        }
+        .btn-save:hover {
+            background: #45a049;
+            box-shadow: 0 4px 16px rgba(76, 175, 80, 0.4);
+            transform: translateY(-1px);
+        }
+        .btn-save:active {
+            transform: translateY(0);
+        }
+        .history-toggle {
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.15s;
+            border: 1px solid #2a2a2a;
+        }
+        .history-toggle:hover {
+            background: #202020;
+        }
+        .history-toggle-text {
+            font-size: 15px;
+            font-weight: 500;
+            color: #e0e0e0;
+        }
+        .history-arrow {
+            font-size: 12px;
+            color: #666;
+            transition: transform 0.2s;
+        }
+        .history-arrow.open {
+            transform: rotate(180deg);
+        }
+        .history-content {
+            display: none;
+        }
+        .history-content.show {
+            display: block;
+        }
+        .history-item {
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+            border: 1px solid #2a2a2a;
+        }
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .history-date {
+            font-size: 15px;
+            font-weight: 600;
+            color: #e0e0e0;
+        }
+        .btn-delete {
+            background: none;
+            border: none;
+            color: #f44336;
+            font-size: 13px;
+            cursor: pointer;
+            padding: 4px 8px;
+            transition: color 0.2s;
+        }
+        .btn-delete:hover {
+            color: #ff5544;
+        }
+        .completion-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .completion-badge {
+            text-align: center;
+            padding: 8px 4px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 500;
+            border: 1px solid transparent;
+        }
+        .completion-badge.complete {
+            background: rgba(76, 175, 80, 0.15);
+            color: #4caf50;
+            border-color: rgba(76, 175, 80, 0.3);
+        }
+        .completion-badge.incomplete {
+            background: #202020;
+            color: #666;
+            border-color: #2a2a2a;
+        }
+        .history-meta {
+            font-size: 13px;
+            color: #888;
+            line-height: 1.6;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="header-top">
+                <div class="date-nav">
+                    <button class="nav-btn" onclick="changeDay(-1)">←</button>
+                    <div class="date-display" id="currentDate"></div>
+                    <button class="nav-btn" onclick="changeDay(1)">→</button>
+                </div>
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="stat-value" id="streakValue">0</div>
+                        <div class="stat-label">Streak</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalDays">0</div>
+                        <div class="stat-label">Days</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Breakfast -->
+        <div class="meal-section">
+            <div class="meal-header">
+                <div class="meal-title">Breakfast</div>
+            </div>
+            <div class="meal-items" id="breakfastItems"></div>
+        </div>
+
+        <!-- Lunch -->
+        <div class="meal-section">
+            <div class="meal-header">
+                <div class="meal-title">Lunch</div>
+            </div>
+            <div class="meal-items" id="lunchItems"></div>
+        </div>
+
+        <!-- Snack -->
+        <div class="meal-section">
+            <div class="meal-header">
+                <div class="meal-title">Snack</div>
+            </div>
+            <div class="meal-items" id="snackItems"></div>
+        </div>
+
+        <!-- Dinner -->
+        <div class="meal-section">
+            <div class="meal-header">
+                <div class="meal-title">Dinner</div>
+            </div>
+            <div class="meal-items" id="dinnerItems"></div>
+        </div>
+
+        <button class="btn-save" onclick="saveLog()">Save Log</button>
+
+        <!-- History Toggle -->
+        <div style="margin-top: 32px;">
+            <div class="history-toggle" onclick="toggleHistory()">
+                <span class="history-toggle-text">View History</span>
+                <span class="history-arrow" id="historyArrow">▼</span>
+            </div>
+            <div class="history-content" id="historyContent"></div>
+        </div>
+
+        <!-- Shopping List Toggle -->
+        <div style="margin-top: 16px;">
+            <div class="shopping-toggle" onclick="toggleShopping()">
+                <span class="shopping-toggle-text">Weekly Shopping List</span>
+                <span class="shopping-arrow" id="shoppingArrow">▼</span>
+            </div>
+            <div class="shopping-content" id="shoppingContent">
+                <div class="shopping-section">
+                    <div class="shopping-title">Base Items (Every Week)</div>
+                    <div class="shopping-item">4 tilapia fillets + 6 eggs (or adjust mix)</div>
+                    <div class="shopping-item">2 bags rice (buy in bulk)</div>
+                    <div class="shopping-item">1 large container oats</div>
+                    <div class="shopping-item">7-8 bags frozen vegetables (peas, corn, green beans, mixed)</div>
+                    <div class="shopping-item">7 sweet potatoes</div>
+                    <div class="shopping-item">4-5 apples</div>
+                    <div class="shopping-item">1 jar peanut butter</div>
+                    <div class="shopping-item">1 container honey</div>
+                    <div class="shopping-item">1 gallon regular milk</div>
+                    <div class="shopping-item">2 bottles Fairlife chocolate milk (16 oz each)</div>
+                    <div class="shopping-item">Omega-3 supplements</div>
+                    <div class="shopping-item">Multivitamin</div>
+                </div>
+                <div class="shopping-section">
+                    <div class="shopping-title">Weekly Variety (~$5-7)</div>
+                    <div class="shopping-item">2-3 bananas</div>
+                    <div class="shopping-item">1 bunch spinach or kale</div>
+                    <div class="shopping-item">1 can black or pinto beans</div>
+                    <div class="shopping-item">2 oranges</div>
+                    <div class="shopping-item">1 bag different frozen vegetable</div>
+                </div>
+                <div class="shopping-section">
+                    <div class="shopping-title">Budget</div>
+                    <div class="shopping-item">Base items: $33-40/week</div>
+                    <div class="shopping-item">Variety: $5-7/week</div>
+                    <div class="shopping-item">Total: ~$38-47/week (~$5.40-6.70/day)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const MEAL_PLAN = {
+            monday: { 
+                breakfast: ["1 cup oats + ½ apple + 1 tbsp PB + 3 tsp honey", "8 oz regular chocolate milk"], 
+                lunch: ["1 bag corn + ½ sweet potato", "1 Omega-3 supplement"], 
+                snack: ["½ apple + 1 tbsp PB", "16 oz Fairlife chocolate milk"], 
+                dinner: ["Tilapia fillet + 1 cup rice", "1 Omega-3 supplement", "1 Multivitamin"]
+            },
+            tuesday: { 
+                breakfast: ["1 cup oats + ½ apple + 1 tbsp PB + 3 tsp honey", "8 oz regular chocolate milk"], 
+                lunch: ["1 bag peas + ½ sweet potato", "1 Omega-3 supplement"], 
+                snack: ["1 banana", "16 oz Fairlife chocolate milk"], 
+                dinner: ["Fried egg + 1 cup rice", "1 Omega-3 supplement", "1 Multivitamin"]
+            },
+            wednesday: { 
+                breakfast: ["1 cup oats + ½ apple + 1 tbsp PB + 3 tsp honey", "8 oz regular chocolate milk"], 
+                lunch: ["1 bag mixed veg + ½ sweet potato", "1 Omega-3 supplement"], 
+                snack: ["½ apple + 1 tbsp PB", "16 oz Fairlife chocolate milk"], 
+                dinner: ["Tilapia + 1 cup rice + spinach", "1 Omega-3 supplement", "1 Multivitamin"]
+            },
+            thursday: { 
+                breakfast: ["1 cup oats + ½ banana + 1 tbsp PB + 3 tsp honey", "8 oz regular chocolate milk"], 
+                lunch: ["1 bag peas + ½ sweet potato", "1 Omega-3 supplement"], 
+                snack: ["½ apple", "16 oz Fairlife chocolate milk"], 
+                dinner: ["Fried egg + 1 cup rice + ½ cup beans", "1 Omega-3 supplement", "1 Multivitamin"]
+            },
+            friday: { 
+                breakfast: ["1 cup oats + ½ apple + 1 tbsp PB + 3 tsp honey", "8 oz regular chocolate milk"], 
+                lunch: ["1 bag corn + ½ sweet potato", "1 Omega-3 supplement"], 
+                snack: ["1 orange", "16 oz Fairlife chocolate milk"], 
+                dinner: ["Tilapia + 1 cup rice", "1 Omega-3 supplement", "1 Multivitamin"]
+            },
+            saturday: { 
+                breakfast: ["1 cup oats + ½ banana + 1 tbsp PB + 3 tsp honey", "8 oz regular chocolate milk"], 
+                lunch: ["1 bag green beans + ½ sweet potato + spinach", "1 Omega-3 supplement"], 
+                snack: ["½ apple + 1 tbsp PB", "16 oz Fairlife chocolate milk"], 
+                dinner: ["Fried egg + 1 cup rice + ½ cup beans", "1 Omega-3 supplement", "1 Multivitamin"]
+            },
+            sunday: { 
+                breakfast: ["1 cup oats + orange + 1 tbsp PB + 3 tsp honey", "8 oz regular chocolate milk"], 
+                lunch: ["1 bag mixed veg + ½ sweet potato", "1 Omega-3 supplement"], 
+                snack: ["½ apple + ½ banana", "16 oz Fairlife chocolate milk"], 
+                dinner: ["Tilapia + 1 cup rice + spinach", "1 Omega-3 supplement", "1 Multivitamin"]
+            }
+        };
+
+        let logs = [];
+        let todayCompleted = {};
+        let currentDate = new Date();
+
+        function loadLogs() {
+            const stored = localStorage.getItem('meal-logs');
+            if (stored) {
+                logs = JSON.parse(stored);
+            }
+        }
+
+        function getCurrentDateString() {
+            return currentDate.toISOString().split('T')[0];
+        }
+
+        function getTodaysMeals() {
+            const dayName = currentDate.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+            return MEAL_PLAN[dayName];
+        }
+
+        function changeDay(delta) {
+            currentDate.setDate(currentDate.getDate() + delta);
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            document.getElementById('currentDate').textContent = currentDate.toLocaleDateString('en-US', { 
+                weekday: 'long', month: 'long', day: 'numeric' 
+            });
+            initializeCompleted();
+            renderMeals();
+        }
+
+        function initializeCompleted() {
+            const dateStr = getCurrentDateString();
+            const todayLog = logs.find(l => l.date === dateStr);
+            if (todayLog) {
+                todayCompleted = todayLog.completed;
+            } else {
+                const meals = getTodaysMeals();
+                todayCompleted = {};
+                ['breakfast', 'lunch', 'snack', 'dinner'].forEach(meal => {
+                    meals[meal].forEach((_, idx) => {
+                        todayCompleted[`${meal}_${idx}`] = false;
+                    });
+                });
+            }
+        }
+
+        function renderMeals() {
+            const meals = getTodaysMeals();
+            
+            ['breakfast', 'lunch', 'snack', 'dinner'].forEach(mealType => {
+                const container = document.getElementById(`${mealType}Items`);
+                container.innerHTML = meals[mealType].map((item, idx) => `
+                    <div class="meal-item">
+                        <div class="checkbox-wrapper">
+                            <input type="checkbox" class="checkbox" 
+                                   id="${mealType}_${idx}" 
+                                   ${todayCompleted[`${mealType}_${idx}`] ? 'checked' : ''}
+                                   onchange="toggleItem('${mealType}_${idx}', this.checked)">
+                            <div class="checkbox-custom"></div>
+                        </div>
+                        <div class="meal-text ${todayCompleted[`${mealType}_${idx}`] ? 'completed' : ''}" 
+                             id="text_${mealType}_${idx}">${item}</div>
+                    </div>
+                `).join('');
+            });
+        }
+
+        function toggleItem(id, checked) {
+            todayCompleted[id] = checked;
+            const textEl = document.getElementById(`text_${id}`);
+            if (checked) {
+                textEl.classList.add('completed');
+            } else {
+                textEl.classList.remove('completed');
+            }
+        }
+
+        function getStreak() {
+            if (logs.length === 0) return 0;
+            let streak = 0;
+            const now = new Date();
+            now.setHours(0, 0, 0, 0);
+            
+            const sortedLogs = [...logs].sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            for (let i = 0; i < sortedLogs.length; i++) {
+                const logDate = new Date(sortedLogs[i].date);
+                logDate.setHours(0, 0, 0, 0);
+                const expectedDate = new Date(now);
+                expectedDate.setDate(expectedDate.getDate() - i);
+                
+                if (logDate.getTime() === expectedDate.getTime()) {
+                    const allComplete = Object.values(sortedLogs[i].completed).every(v => v === true);
+                    if (allComplete) {
+                        streak++;
+                    } else {
+                        break;
+                    }
+                } else {
+                    break;
+                }
+            }
+            return streak;
+        }
+
+        function updateStats() {
+            document.getElementById('streakValue').textContent = getStreak();
+            document.getElementById('totalDays').textContent = logs.length;
+        }
+
+        function saveLog() {
+            const dateStr = getCurrentDateString();
+            
+            const log = {
+                date: dateStr,
+                completed: todayCompleted,
+                timestamp: new Date().toISOString()
+            };
+            
+            const existingIndex = logs.findIndex(l => l.date === dateStr);
+            if (existingIndex >= 0) {
+                logs[existingIndex] = log;
+            } else {
+                logs.unshift(log);
+            }
+            
+            logs.sort((a, b) => new Date(b.date) - new Date(a.date));
+            localStorage.setItem('meal-logs', JSON.stringify(logs));
+            
+            updateStats();
+            renderHistory();
+            alert('Log saved!');
+        }
+
+        function toggleShopping() {
+            const content = document.getElementById('shoppingContent');
+            const arrow = document.getElementById('shoppingArrow');
+            content.classList.toggle('show');
+            arrow.classList.toggle('open');
+        }
+
+        function toggleHistory() {
+            const content = document.getElementById('historyContent');
+            const arrow = document.getElementById('historyArrow');
+            content.classList.toggle('show');
+            arrow.classList.toggle('open');
+            
+            if (content.classList.contains('show')) {
+                renderHistory();
+            }
+        }
+
+        function renderHistory() {
+            const container = document.getElementById('historyContent');
+            
+            if (logs.length === 0) {
+                container.innerHTML = '<div class="empty-state">No history yet. Start logging!</div>';
+                return;
+            }
+            
+            container.innerHTML = logs.map(log => {
+                const completedCount = Object.values(log.completed).filter(v => v === true).length;
+                const totalItems = Object.keys(log.completed).length;
+                
+                return `
+                    <div class="history-item">
+                        <div class="history-header">
+                            <div class="history-date">${new Date(log.date).toLocaleDateString('en-US', { 
+                                weekday: 'long', month: 'short', day: 'numeric' 
+                            })}</div>
+                            <button class="btn-delete" onclick="deleteLog('${log.date}')">Delete</button>
+                        </div>
+                        <div class="completion-grid">
+                            <div class="completion-badge ${log.completed.breakfast_0 && log.completed.breakfast_1 ? 'complete' : 'incomplete'}">
+                                Breakfast
+                            </div>
+                            <div class="completion-badge ${log.completed.lunch_0 && log.completed.lunch_1 ? 'complete' : 'incomplete'}">
+                                Lunch
+                            </div>
+                            <div class="completion-badge ${log.completed.snack_0 && log.completed.snack_1 ? 'complete' : 'incomplete'}">
+                                Snack
+                            </div>
+                            <div class="completion-badge ${log.completed.dinner_0 && log.completed.dinner_1 && log.completed.dinner_2 ? 'complete' : 'incomplete'}">
+                                Dinner
+                            </div>
+                        </div>
+                        <div class="history-meta">
+                            <div>${completedCount} of ${totalItems} items completed</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function deleteLog(date) {
+            if (!confirm('Delete this log?')) return;
+            logs = logs.filter(l => l.date !== date);
+            localStorage.setItem('meal-logs', JSON.stringify(logs));
+            updateStats();
+            renderHistory();
+        }
+
+        // Initialize
+        loadLogs();
+        updateDisplay();
+        updateStats();
+    </script>
+</body>
+</html>
